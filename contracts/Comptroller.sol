@@ -8,6 +8,7 @@ import "./ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 import "./Governance/Comp.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Compound's Comptroller Contract
@@ -235,17 +236,24 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         // Pausing is a very serious situation - we revert to sound the alarms
         require(!mintGuardianPaused[cToken], "mint is paused");
 
+        console.log("mintAllowed AAA");
+        console.log(mintAmount);
         // Shh - currently unused
         minter;
         mintAmount;
 
         if (!markets[cToken].isListed) {
+            console.log("mintAllowed AAA return");
             return uint(Error.MARKET_NOT_LISTED);
         }
+
+        console.log("mintAllowed BBB");
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, minter);
+
+        console.log("mintAllowed CCC");
 
         return uint(Error.NO_ERROR);
     }
