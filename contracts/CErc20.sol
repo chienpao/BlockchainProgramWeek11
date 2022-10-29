@@ -30,6 +30,9 @@ contract CErc20 is CToken, CErc20Interface {
                         string memory name_,
                         string memory symbol_,
                         uint8 decimals_) public {
+        // Add for fix "only admin may initialize the market" by not using proxy contract
+        admin = payable(msg.sender);
+
         // CToken initialize does the bulk of the work
         super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
