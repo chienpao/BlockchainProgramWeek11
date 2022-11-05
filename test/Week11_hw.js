@@ -55,10 +55,17 @@ describe("The CErc20 Full testing start...", function () {
     // if missing this step, will popup "ERC20: transfer amount exceeds balance" error message
     await erc20Deploy.connect(owner).transfer(otherAccount.address, ethers.utils.parseUnits("100", 18));
 
-    // And finally, mint successfully!
-    await cErc20Deploy.connect(otherAccount).mint(ethers.utils.parseUnits("100", 18));
+    // verify otherAccount already have erc20 * 100 tokens
+    expect(await erc20Deploy.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("100", 18));
 
-    // And finally, redeem successfully!
+    // verify otherAccount after mint, then will have cErc20 * 100 tokens
+    await cErc20Deploy.connect(otherAccount).mint(ethers.utils.parseUnits("100", 18));
+    expect(await cErc20Deploy.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("100", 18));
+
+    // verify otherAccount after redeem, then will have cErc20 * 0 tokens and Erc20 * 100 tokens
     await cErc20Deploy.connect(otherAccount).redeem(ethers.utils.parseUnits("100", 18));
+    expect(await cErc20Deploy.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("0", 18));
+    expect(await erc20Deploy.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("100", 18));
+
   });
 });
