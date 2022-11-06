@@ -236,24 +236,17 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         // Pausing is a very serious situation - we revert to sound the alarms
         require(!mintGuardianPaused[cToken], "mint is paused");
 
-        console.log("mintAllowed AAA");
-        console.log(mintAmount);
         // Shh - currently unused
         minter;
         mintAmount;
 
         if (!markets[cToken].isListed) {
-            console.log("mintAllowed AAA return");
             return uint(Error.MARKET_NOT_LISTED);
         }
-
-        console.log("mintAllowed BBB");
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, minter);
-
-        console.log("mintAllowed CCC");
 
         return uint(Error.NO_ERROR);
     }
@@ -349,9 +342,13 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         // Pausing is a very serious situation - we revert to sound the alarms
         require(!borrowGuardianPaused[cToken], "borrow is paused");
 
+        console.log("borrowAllowed AAA");
+
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
+
+        console.log("borrowAllowed BBB");
 
         if (!markets[cToken].accountMembership[borrower]) {
             // only cTokens may call borrowAllowed if borrower not in market
@@ -367,7 +364,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             assert(markets[cToken].accountMembership[borrower]);
         }
 
+        console.log("borrowAllowed CCC");
+
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
+            console.log("borrowAllowed DDD");
             return uint(Error.PRICE_ERROR);
         }
 
@@ -385,6 +385,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             return uint(err);
         }
         if (shortfall > 0) {
+            console.log("borrowAllowed EEE");
             return uint(Error.INSUFFICIENT_LIQUIDITY);
         }
 
@@ -734,6 +735,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         uint redeemTokens,
         uint borrowAmount) internal view returns (Error, uint, uint) {
 
+        console.log("getHypotheticalAccountLiquidityInternal AAA");
         AccountLiquidityLocalVars memory vars; // Holds all our calculation results
         uint oErr;
 
@@ -741,6 +743,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         CToken[] memory assets = accountAssets[account];
         for (uint i = 0; i < assets.length; i++) {
             CToken asset = assets[i];
+            console.log("getHypotheticalAccountLiquidityInternal BBB, %s", account);
 
             // Read the balances and exchange rate from the cToken
             (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
@@ -753,6 +756,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             // Get the normalized price of the asset
             vars.oraclePriceMantissa = oracle.getUnderlyingPrice(asset);
             if (vars.oraclePriceMantissa == 0) {
+                console.log("getHypotheticalAccountLiquidityInternal CCC");
                 return (Error.PRICE_ERROR, 0, 0);
             }
             vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
@@ -780,8 +784,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         // These are safe, as the underflow condition is checked first
         if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
+            console.log("getHypotheticalAccountLiquidityInternal DDD");
             return (Error.NO_ERROR, vars.sumCollateral - vars.sumBorrowPlusEffects, 0);
         } else {
+            console.log("getHypotheticalAccountLiquidityInternal, sumBorrowPlusEffects:%s, sumCollateral:%s", vars.sumBorrowPlusEffects, vars.sumCollateral);
             return (Error.NO_ERROR, 0, vars.sumBorrowPlusEffects - vars.sumCollateral);
         }
     }

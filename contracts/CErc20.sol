@@ -51,7 +51,6 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function mint(uint mintAmount) override external returns (uint) {
-        console.log("in mint, mintAmount %s", mintAmount);
         mintInternal(mintAmount);
         return NO_ERROR;
     }
@@ -63,7 +62,6 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) override external returns (uint) {
-        console.log("in redeem, redeemTokens %s", redeemTokens);
         redeemInternal(redeemTokens);
         return NO_ERROR;
     }
