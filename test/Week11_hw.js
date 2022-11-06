@@ -167,8 +167,12 @@ describe("The CErc20 Full testing start...", function () {
       // set cErc20B as $100
       await simplePriceOracleContract.setUnderlyingPrice(cErc20ContractB.address, ethers.utils.parseUnits("100", 18));
 
-      // set cErc20B's collateral factor to 0.5
+      // set cErc20B's collateral factor to 50%
       await comptrollerContract.connect(owner)._setCollateralFactor(cErc20ContractB.address, ethers.utils.parseUnits("0.5", 18));
+
+      // check set collateral factor success
+      let market = await comptrollerContract.markets(cErc20ContractB.address);
+      expect(market.collateralFactorMantissa).to.eq(ethers.utils.parseUnits("0.5", 18));
 
       // let cErc20B enter the Market
       await comptrollerContract.connect(otherAccount).enterMarkets([cErc20ContractB.address]);
@@ -192,9 +196,49 @@ describe("The CErc20 Full testing start...", function () {
       expect(await cErc20ContractA.balanceOf(otherAccount2.address)).to.equal(ethers.utils.parseUnits("100", 18));
 
       // Stuck on "reverted with custom error 'BorrowComptrollerRejection(4)'"
-      // Have no idea for fix this issue now...
       // Finally get solution is need to connect otherAccount for "enterMarkets"
       await cErc20ContractA.connect(otherAccount).borrow(ethers.utils.parseUnits("50", 18));
+
+      // Repay borrow success
+      await erc20ContractA.connect(otherAccount).approve(cErc20ContractA.address, ethers.utils.parseUnits("50", 18));
+      await cErc20ContractA.connect(otherAccount).repayBorrow(ethers.utils.parseUnits("50", 18));
+    });
+  });
+
+  describe("Set cTokenB collateral factor", function () {
+    it("Set cTokenB collateral factor to 20%", async function(){
+
+      // borrow again
+      await cErc20ContractA.connect(otherAccount).borrow(ethers.utils.parseUnits("50", 18));
+
+      // set cErc20B's collateral factor to 20%
+      await comptrollerContract.connect(owner)._setCollateralFactor(cErc20ContractB.address, ethers.utils.parseUnits("0.2", 18));
+
+      // check set collateral factor success
+      let market = await comptrollerContract.markets(cErc20ContractB.address);
+      expect(market.collateralFactorMantissa).to.eq(ethers.utils.parseUnits("0.2", 18));
+
+      // check current shortfall
+      const results = await comptrollerContract.getAccountLiquidity(otherAccount.address);
+      let shortfall = results[2];
+      expect(shortfall).to.gt(0);
+
+      // set close factor to 50%
+      comptrollerContract._setCloseFactor(ethers.utils.parseUnits("0.5", 18));
+
+      // set LiquidationIncentive to 10%
+      comptrollerContract._setLiquidationIncentive(ethers.utils.parseUnits("0.1", 18));
+
+      // count repay
+      const repayAmount = shortfall * (ethers.utils.parseUnits("0.2", 18)/(ethers.utils.parseUnits("1", 18)));
+
+      // console.log("repayAmount: %s", BigInt(repayAmount));
+      // Also not understand why get error fault="overflow", but if change to BigInt will be ok
+      await erc20ContractA.connect(otherAccount).approve(cErc20ContractA.address, BigInt(repayAmount));
+      await cErc20ContractA.connect(otherAccount).mint(BigInt(repayAmount));
+      
+      // stuck on LiquidateComptrollerRejection(3), after check shortfall is 0 cause this issue
+      await cErc20ContractA.connect(otherAccount).liquidateBorrow(otherAccount2.address, BigInt(repayAmount), cErc20ContractB.address);
     });
   });
 });
