@@ -171,7 +171,7 @@ describe("The CErc20 Full testing start...", function () {
       await comptrollerContract.connect(owner)._setCollateralFactor(cErc20ContractB.address, ethers.utils.parseUnits("0.5", 18));
 
       // let cErc20B enter the Market
-      await comptrollerContract.enterMarkets([cErc20ContractB.address]);
+      await comptrollerContract.connect(otherAccount).enterMarkets([cErc20ContractB.address]);
 
       // Transfer 1 * erc20B to otherAccount
       await erc20ContractB.connect(owner).transfer(otherAccount.address, ethers.utils.parseUnits("1", 18));
@@ -193,6 +193,7 @@ describe("The CErc20 Full testing start...", function () {
 
       // Stuck on "reverted with custom error 'BorrowComptrollerRejection(4)'"
       // Have no idea for fix this issue now...
+      // Finally get solution is need to connect otherAccount for "enterMarkets"
       await cErc20ContractA.connect(otherAccount).borrow(ethers.utils.parseUnits("50", 18));
     });
   });
