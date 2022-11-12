@@ -11,7 +11,7 @@ describe("The CErc20 Full testing start...", function () {
   let erc20ContractA, cErc20ContractA;
   let erc20ContractB, cErc20ContractB;
   let comptrollerContract, interestRateModelContract, simplePriceOracleContract;
-  let owner, otherAccount, otherAccount2;
+  let owner, user1, user2;
 
   async function deployNeededContract() {
     const { erc20DeployA } = await loadFixture(deployErc20A);
@@ -93,10 +93,10 @@ describe("The CErc20 Full testing start...", function () {
     interestRateModelContract = interestRateModelDeploy;
     simplePriceOracleContract = simplePriceOracleDeploy;
 
-    const [ownerEther, otherAccountEther, otherAccountEther2] = await ethers.getSigners();
+    const [ownerEther, user1Ether, user2Ether] = await ethers.getSigners();
     owner = ownerEther;
-    otherAccount = otherAccountEther;
-    otherAccount2 = otherAccountEther2;
+    user1 = user1Ether;
+    user2 = user2Ether;
 
     // CErc20 initialize
     await cErc20ContractA["initialize(address,address,address,uint256,string,string,uint8)"](
@@ -127,8 +127,8 @@ describe("The CErc20 Full testing start...", function () {
   });
 
   beforeEach(async function () {
-    // console.log("otherAccount.address, %s", otherAccount.address);
-    // console.log("otherAccount2.address, %s", otherAccount2.address);
+    // console.log("user1.address, %s", user1.address);
+    // console.log("user2.address, %s", user2.address);
     // console.log("cErc20ContractA.address, %s", cErc20ContractA.address);
     // console.log("cErc20ContractB.address, %s", cErc20ContractB.address);
     console.log("============beforeEach");
@@ -139,23 +139,23 @@ describe("The CErc20 Full testing start...", function () {
 
       // And find in Erc20, need to approve token allowance
       // if missing this step, will popup "ERC20: insufficient allowance" error message
-      await erc20ContractA.connect(otherAccount).approve(cErc20ContractA.address, ethers.utils.parseUnits("100", DECIMALS));
+      await erc20ContractA.connect(user1).approve(cErc20ContractA.address, ethers.utils.parseUnits("100", DECIMALS));
 
       // And if want to mint, the user also need have enough balance
       // if missing this step, will popup "ERC20: transfer amount exceeds balance" error message
-      await erc20ContractA.connect(owner).transfer(otherAccount.address, ethers.utils.parseUnits("100", DECIMALS));
+      await erc20ContractA.connect(owner).transfer(user1.address, ethers.utils.parseUnits("100", DECIMALS));
 
-      // verify otherAccount already have erc20 * 100 tokens
-      expect(await erc20ContractA.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
+      // verify user1 already have erc20 * 100 tokens
+      expect(await erc20ContractA.balanceOf(user1.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
 
-      // verify otherAccount after mint, then will have cErc20 * 100 tokens
-      await cErc20ContractA.connect(otherAccount).mint(ethers.utils.parseUnits("100", DECIMALS));
-      expect(await cErc20ContractA.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
+      // verify user1 after mint, then will have cErc20 * 100 tokens
+      await cErc20ContractA.connect(user1).mint(ethers.utils.parseUnits("100", DECIMALS));
+      expect(await cErc20ContractA.balanceOf(user1.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
 
-      // verify otherAccount after redeem, then will have cErc20 * 0 tokens and Erc20 * 100 tokens
-      await cErc20ContractA.connect(otherAccount).redeem(ethers.utils.parseUnits("100", DECIMALS));
-      expect(await cErc20ContractA.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("0", DECIMALS));
-      expect(await erc20ContractA.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
+      // verify user1 after redeem, then will have cErc20 * 0 tokens and Erc20 * 100 tokens
+      await cErc20ContractA.connect(user1).redeem(ethers.utils.parseUnits("100", DECIMALS));
+      expect(await cErc20ContractA.balanceOf(user1.address)).to.equal(ethers.utils.parseUnits("0", DECIMALS));
+      expect(await erc20ContractA.balanceOf(user1.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
     });
   });
 
@@ -183,33 +183,33 @@ describe("The CErc20 Full testing start...", function () {
     expect(market.collateralFactorMantissa).to.eq(ethers.utils.parseUnits("0.5", DECIMALS));
 
     // let cErc20B enter the Market
-    await comptrollerContract.connect(otherAccount).enterMarkets([cErc20ContractB.address]);
+    await comptrollerContract.connect(user1).enterMarkets([cErc20ContractB.address]);
 
-    // Transfer 1 * erc20B to otherAccount
-    await erc20ContractB.connect(owner).transfer(otherAccount.address, ethers.utils.parseUnits("1", DECIMALS));
-    expect(await erc20ContractB.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("1", DECIMALS));
+    // Transfer 1 * erc20B to user1
+    await erc20ContractB.connect(owner).transfer(user1.address, ethers.utils.parseUnits("1", DECIMALS));
+    expect(await erc20ContractB.balanceOf(user1.address)).to.equal(ethers.utils.parseUnits("1", DECIMALS));
 
     // otherAaccount mint 1 * cErc20B
-    await erc20ContractB.connect(otherAccount).approve(cErc20ContractB.address, ethers.utils.parseUnits("1", DECIMALS));
-    await cErc20ContractB.connect(otherAccount).mint(ethers.utils.parseUnits("1", DECIMALS));
-    expect(await cErc20ContractB.balanceOf(otherAccount.address)).to.equal(ethers.utils.parseUnits("1", DECIMALS));
+    await erc20ContractB.connect(user1).approve(cErc20ContractB.address, ethers.utils.parseUnits("1", DECIMALS));
+    await cErc20ContractB.connect(user1).mint(ethers.utils.parseUnits("1", DECIMALS));
+    expect(await cErc20ContractB.balanceOf(user1.address)).to.equal(ethers.utils.parseUnits("1", DECIMALS));
 
-    // Transfer 100 * erc20A to otherAccount2
-    await erc20ContractA.transfer(otherAccount2.address, ethers.utils.parseUnits("100", DECIMALS));
-    expect(await erc20ContractA.balanceOf(otherAccount2.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
+    // Transfer 100 * erc20A to user2
+    await erc20ContractA.transfer(user2.address, ethers.utils.parseUnits("100", DECIMALS));
+    expect(await erc20ContractA.balanceOf(user2.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
 
-    // otherAccount2 mint 100 * cErc20A
-    await erc20ContractA.connect(otherAccount2).approve(cErc20ContractA.address, ethers.utils.parseUnits("100", DECIMALS));
-    await cErc20ContractA.connect(otherAccount2).mint(ethers.utils.parseUnits("100", DECIMALS));
-    expect(await cErc20ContractA.balanceOf(otherAccount2.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
+    // user2 mint 100 * cErc20A
+    await erc20ContractA.connect(user2).approve(cErc20ContractA.address, ethers.utils.parseUnits("100", DECIMALS));
+    await cErc20ContractA.connect(user2).mint(ethers.utils.parseUnits("100", DECIMALS));
+    expect(await cErc20ContractA.balanceOf(user2.address)).to.equal(ethers.utils.parseUnits("100", DECIMALS));
 
     // Stuck on "reverted with custom error 'BorrowComptrollerRejection(4)'"
-    // Finally get solution is need to connect otherAccount for "enterMarkets"
-    await cErc20ContractA.connect(otherAccount).borrow(ethers.utils.parseUnits("50", DECIMALS));
+    // Finally get solution is need to connect user1 for "enterMarkets"
+    await cErc20ContractA.connect(user1).borrow(ethers.utils.parseUnits("50", DECIMALS));
 
     // Repay borrow success
-    // await erc20ContractA.connect(otherAccount).approve(cErc20ContractA.address, ethers.utils.parseUnits("50", DECIMALS));
-    // await cErc20ContractA.connect(otherAccount).repayBorrow(ethers.utils.parseUnits("50", DECIMALS));
+    // await erc20ContractA.connect(user1).approve(cErc20ContractA.address, ethers.utils.parseUnits("50", DECIMALS));
+    // await cErc20ContractA.connect(user1).repayBorrow(ethers.utils.parseUnits("50", DECIMALS));
   }
 
   //讓 user1 borrow/repay
@@ -222,7 +222,7 @@ describe("The CErc20 Full testing start...", function () {
     it("let user1 be liquidated by user2", async function () {
 
       // borrow again
-      // await cErc20ContractA.connect(otherAccount).borrow(ethers.utils.parseUnits("50", DECIMALS));
+      // await cErc20ContractA.connect(user1).borrow(ethers.utils.parseUnits("50", DECIMALS));
 
       // set cErc20B's collateral factor to 40%
       await comptrollerContract.connect(owner)._setCollateralFactor(cErc20ContractB.address, ethers.utils.parseUnits("0.4", DECIMALS));
@@ -232,19 +232,19 @@ describe("The CErc20 Full testing start...", function () {
       expect(market.collateralFactorMantissa).to.eq(ethers.utils.parseUnits("0.4", DECIMALS));
 
       // check current shortfall will be 30 cTokenA
-      const results = await comptrollerContract.getAccountLiquidity(otherAccount.address);
+      const results = await comptrollerContract.getAccountLiquidity(user1.address);
       let shortfall = results[2];
       console.log("shortfall: %s", shortfall)
       expect(shortfall).to.gt(0);
 
       // count repay
       const repayAmount = ethers.utils.parseUnits("25", DECIMALS);
-      console.log(`otherAccount2 Liquidate ${repayAmount}`);
-      await erc20ContractA.connect(owner).transfer(otherAccount2.address, repayAmount);
-      await erc20ContractA.connect(otherAccount2).approve(cErc20ContractA.address, repayAmount);
-      await cErc20ContractA.connect(otherAccount2).liquidateBorrow(otherAccount.address, repayAmount, cErc20ContractB.address);
+      console.log(`user2 Liquidate ${repayAmount}`);
+      await erc20ContractA.connect(owner).transfer(user2.address, repayAmount);
+      await erc20ContractA.connect(user2).approve(cErc20ContractA.address, repayAmount);
+      await cErc20ContractA.connect(user2).liquidateBorrow(user1.address, repayAmount, cErc20ContractB.address);
 
-      const otherAccount2TokenBAmount = await cErc20ContractB.balanceOf(otherAccount2.address);
+      const user2TokenBAmount = await cErc20ContractB.balanceOf(user2.address);
 
       // 2.8% fee
       const protocolSeizeShare = await cErc20ContractB.protocolSeizeShareMantissa();
@@ -257,12 +257,12 @@ describe("The CErc20 Full testing start...", function () {
 
       // bonus sub 2.8% fee
       const liquidationIncentiveActualFee = liquidationIncentiveFee.sub(protocolSeizeShareFee);
-      expect(otherAccount2TokenBAmount).equals(liquidationIncentiveActualFee);
+      expect(user2TokenBAmount).equals(liquidationIncentiveActualFee);
 
-      // check otherAccount's cTokenB balance
-      const otherAccountTokenBAmount = await cErc20ContractB.balanceOf(otherAccount.address);
-      const expectotherAccountTokenBAmount = ethers.BigNumber.from(BASE).sub(liquidationIncentiveFee);
-      expect(otherAccountTokenBAmount).equals(expectotherAccountTokenBAmount);
+      // check user1's cTokenB balance
+      const user1TokenBAmount = await cErc20ContractB.balanceOf(user1.address);
+      const expectuser1TokenBAmount = ethers.BigNumber.from(BASE).sub(liquidationIncentiveFee);
+      expect(user1TokenBAmount).equals(expectuser1TokenBAmount);
     });
   });*/
 
@@ -284,22 +284,22 @@ describe("The CErc20 Full testing start...", function () {
       expect(tokenBPriceResult).equals(tokenBPrice);
 
       // token B price already set to 90, so only can borrow 45 token A, so check shortfailwill be 5 cTokenA
-      const results = await comptrollerContract.getAccountLiquidity(otherAccount.address);
+      const results = await comptrollerContract.getAccountLiquidity(user1.address);
       let shortfall = results[2];
       console.log("shortfall: %s", shortfall)
       expect(shortfall).to.eq(ethers.utils.parseUnits("5", DECIMALS));
 
-      // otherAccount2 liquidate borrow otherAccount by 10 cTokenA
+      // user2 liquidate borrow user1 by 10 cTokenA
       const repayAmount = ethers.utils.parseUnits("10", DECIMALS);
-      console.log(`otherAccount2 Liquidate ${repayAmount}`);
-      await erc20ContractA.connect(owner).transfer(otherAccount2.address, repayAmount);
-      await erc20ContractA.connect(otherAccount2).approve(cErc20ContractA.address, repayAmount);
-      await cErc20ContractA.connect(otherAccount2).liquidateBorrow(otherAccount.address, repayAmount, cErc20ContractB.address);
+      console.log(`user2 Liquidate ${repayAmount}`);
+      await erc20ContractA.connect(owner).transfer(user2.address, repayAmount);
+      await erc20ContractA.connect(user2).approve(cErc20ContractA.address, repayAmount);
+      await cErc20ContractA.connect(user2).liquidateBorrow(user1.address, repayAmount, cErc20ContractB.address);
 
-      // check otherAccount2 after liquidate Borrow, only have 0 TokenA
-      expect(await erc20ContractA.balanceOf(otherAccount2.address)).to.eq(ethers.utils.parseUnits("0", DECIMALS));
+      // check user2 after liquidate Borrow, only have 0 TokenA
+      expect(await erc20ContractA.balanceOf(user2.address)).to.eq(ethers.utils.parseUnits("0", DECIMALS));
 
-      const otherAccount2TokenBAmount = await cErc20ContractB.balanceOf(otherAccount2.address);
+      const user2TokenBAmount = await cErc20ContractB.balanceOf(user2.address);
 
       // 2.8% fee
       const protocolSeizeShare = await cErc20ContractB.protocolSeizeShareMantissa();
@@ -314,16 +314,16 @@ describe("The CErc20 Full testing start...", function () {
       const liquidationIncentiveActualFee = liquidationIncentiveFee.sub(protocolSeizeShareFee);
 
       // expect +118800000000000000, but is -118799999999999998
-      expect(otherAccount2TokenBAmount).lt(liquidationIncentiveActualFee);
+      expect(user2TokenBAmount).lt(liquidationIncentiveActualFee);
 
-      // check otherAccount's cTokenB 
-      const otherAccountcTokenBAmount = await cErc20ContractB.balanceOf(otherAccount.address);
+      // check user1's cTokenB 
+      const user1cTokenBAmount = await cErc20ContractB.balanceOf(user1.address);
 
-      // otherAccount2 get bonus
-      const expectOtherAccountcTokenBAmount = ethers.BigNumber.from(BASE).sub(liquidationIncentiveFee);
+      // user2 get bonus
+      const expectuser1cTokenBAmount = ethers.BigNumber.from(BASE).sub(liquidationIncentiveFee);
       
       // expect +877777777777777778, but is -877777777777777780
-      expect(otherAccountcTokenBAmount).gt(expectOtherAccountcTokenBAmount);
+      expect(user1cTokenBAmount).gt(expectuser1cTokenBAmount);
     });
   });
 });
