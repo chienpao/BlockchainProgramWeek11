@@ -566,7 +566,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     function borrowFresh(address payable borrower, uint borrowAmount) internal {
         /* Fail if borrow not allowed */
         uint allowed = comptroller.borrowAllowed(address(this), borrower, borrowAmount);
-        console.log("borrowFresh AAA");
         if (allowed != 0) {
             revert BorrowComptrollerRejection(allowed);
         }
