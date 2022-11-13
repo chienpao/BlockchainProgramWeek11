@@ -32,10 +32,12 @@
 
 Try running commands as below to see the test case results:
 
-```env example
+.ENV example:
+```shell
 ALCHEMY_KEY="$KEY" //change to your private key
 ```
 
+Script command:
 ```shell
 npx hardhat compile
 npx hardhat test test/Week11_hw.js
