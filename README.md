@@ -1,4 +1,4 @@
-# Appworks Blockchain Program week11
+# Appworks Blockchain Program week11 - week13
 
 (1.)在 Hardhat 的 test 中部署一個 CErc20(CErc20.sol)，一個 Comptroller(Comptroller.sol) 以及合約初始化時相關必要合約，請遵循以下細節：
 - CToken 的 decimals 皆為 18
