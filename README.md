@@ -21,9 +21,24 @@
 (4.)延續 (3.) 的借貸場景，調整 token A 的 collateral factor，讓 user1 被 user2 清算
 (5.)延續 (3.) 的借貸場景，調整 oracle 中的 token B 的價格，讓 user1 被 user2 清算
 
+(6.)請使用 Hardhat 的 fork 模式撰寫測試，並使用 AAVE 的 Flash loan 來清算 user1，請遵循以下細節：
+- Fork Ethereum mainnet at block 15815693
+- cToken 的 decimals 皆為 18，初始 exchangeRate 為 1:1
+- 使用 USDC 以及 UNI 代幣來作為 token A 以及 Token B
+- 在 Oracle 中設定 USDC 的價格為 $1，UNI 的價格為 $10
+- 設定 UNI 的 collateral factor 為 50%
+- User1 使用 1000 顆 UNI 作為抵押品借出 5000 顆 USDC
+- 將 UNI 價格改為 $6.2 使 User1 產生 Shortfall，並讓 User2 透過 AAVE 的 Flash loan 來清算 User1
+
 Try running commands as below to see the test case results:
+
+```env example
+ALCHEMY_KEY="$KEY" //change to your private key
+```
 
 ```shell
 npx hardhat compile
-npx hardhat test
+npx hardhat test test/Week11_hw.js
+or
+npx hardhat test test/Week13_hw.js
 ```
